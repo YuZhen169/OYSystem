@@ -1,0 +1,239 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html" ; charset="utf-8" />
+    <title>添加请假单</title>
+
+    <link rel="stylesheet" href="../layui/css/layui.css" />
+    <link rel="stylesheet" href="../css/xadmin.css">
+    <script src="../js/jquery/jQuery-2.2.0.min.js"></script>
+    <script src="../lib/layui/layui.js"></script>
+
+
+    <style>
+        form {
+            margin-top: 20px;
+        }
+
+        #div {
+            width: 80%;
+            margin: 0 auto;
+        }
+        .x-nav {
+            padding: 0 20px;
+            position: relative;
+            z-index: 99;
+            border-bottom: 1px solid #e5e5e5;
+            line-height: 39px;
+            height: 39px;
+            overflow: hidden;
+            background:
+                    #fff;
+        }
+        .layui-btn{
+            background: red;
+        }
+
+    </style>
+
+
+
+</head>
+
+<body style="background: white; margin: 0 auto;height: 100%">
+
+<div class="x-nav">
+    <!--<a class="layui-btn layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right" onclick="location.reload()" title="刷新">
+        <i class="layui-icon layui-icon-refresh" style="line-height:30px"></i>
+    </a>-->
+    <h6 style="font-weight: bold">添加请假单</h6>
+</div>
+<div id="div">
+    <form class="layui-form" action="/leave/addLeave">
+        <div class="layui-form-item" method="post" id="claimForm">
+            <label class="layui-form-label">创建人</label>
+            <div class="layui-input-inline" style="width: 400px;">
+                <input th:value="${session.employee.name}" value="新创建" readonly="readonly" type="text" required lay-verify="required" placeholder="请输入报销人" autocomplete="off" class="layui-input">
+            </div>
+            <i class="layui-icon" style="font-size: 30px;color: red;">&#x1005;</i>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">创建时间</label>
+            <div class="layui-input-inline" style="width: 400px;">
+                <input type="text" required lay-verify="required" readonly="readonly" autocomplete="off" class="layui-input"  id="createTime">
+            </div>
+            <i class="layui-icon" style="font-size: 30px;color: red;">&#x1005;</i>
+        </div>
+
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">状态</label>
+            <div class="layui-input-inline" style="width: 400px;">
+                <input type="text" value="新创建" readonly="readonly" required lay-verify="required" placeholder="请输入状态" autocomplete="off" class="layui-input" name="status" id="status">
+            </div>
+            <i class="layui-icon" style="font-size: 30px;color: red;">&#x1005;</i>
+        </div>
+
+        <hr class="layui-bg-gray">
+        <div class="layui-form-item">
+            <label class="layui-form-label">开始时间</label>
+            <div class="layui-input-inline" style="width: 400px;">
+                <input type="text" class="layui-input" lay-verify="required"  required placeholder="yyyy-MM-dd HH:mm:ss" id="startTime" name="startTime">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">结束时间</label>
+            <div class="layui-input-inline" style="width: 400px;">
+                <input type="text" class="layui-input" lay-verify="required"  required placeholder="yyyy-MM-dd HH:mm:ss" id="endTime" name="endTime">
+            </div>
+            <span style="color: red;display: none;padding: 10px;" id="tips">* 注意:结束时间不能在开始时间之前</span>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">请假天数</label>
+            <div class="layui-input-inline" style="width: 400px;">
+                <input type="text" placeholder="请输入请假天数" required lay-verify="required" autocomplete="off" class="layui-input" name="leaveDay" id="leaveDay">
+            </div>
+            <span style="color: red;display: none;padding: 10px;" id="tips1">* 注意: 请输入正确的请假天数</span>
+
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">请假类型</label>
+            <div class="layui-input-inline" style="width: 400px;">
+                <select name="leaveType" id="leaveType">
+                    <option value="请选择">请选择</option>
+                    <option value="事假">事假</option>
+                    <option value="婚假">婚假</option>
+                    <option value="年假">年假</option>
+                    <option value="病假">病假</option>
+                    <option value="其他">其他</option>
+                </select>
+            </div>
+        </div>
+        <hr class="layui-bg-gray">
+
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">请假原因</label>
+            <div class="layui-input-block" style="width: 800px;">
+                <textarea required="required" id="reason" name="reason" placeholder="请输入内容" class="layui-textarea"></textarea>
+            </div>
+        </div>
+
+        <div class="layui-form-item ">
+            <div class="layui-input-block" style="width: 400px;">
+                <button class="layui-btn" lay-submit lay-filter="formDemo" id="save">保存</button>
+                <button class="layui-btn" lay-submit id="submit">提交</button>
+            </div>
+        </div>
+
+    </form>
+</div>
+<script th:inline="javascript">
+    var flag=[[${flag}]];
+    if(flag!=null){
+        layui.use('layer',function() {
+            var layer = layui.layer;
+            layer.alert(flag);
+        });
+    }
+</script>
+
+
+<script>
+    //Demo
+    layui.use(['form',"layer","laydate"],function() {
+        var form = layui.form;
+        var layer = layui.layer;
+        var laydate = layui.laydate;
+
+        //日期
+        laydate.render({
+            elem: '#startTime',type: 'datetime'
+        });
+        laydate.render({
+            elem: '#endTime',type: 'datetime'
+        });
+
+
+
+
+
+    });
+
+    function dateDays(date1,date2){
+        var sdate = new Date(date1);
+        var now = new Date(date2);
+        var days = now.getTime() - sdate.getTime();
+        var day = parseInt(days / (1000 * 60 * 60 * 24));
+        return day;
+    }
+
+
+
+
+
+
+
+    $("form").submit(function(){
+        var startTime=$("#startTime").val();		//开始的
+        var endTime=$("#endTime").val();			//结束的
+        var day=dateDays(startYmd,endYmd);      //天数差
+        var leaveDay=$("#leaveDay").val();		//天数
+        var leaveType=$("#leaveType").val();	//类型
+        var num=day;
+
+        if (endYmd <startYmd) {
+            $("#tips").css("display","block");
+            return false;
+        }else{
+            $("#tips").css("display","none");
+        }
+        //天数是否正确
+        if(num!=leaveDay){
+            $("#tips1").css("display","block");
+            return false;
+        }else{
+            $("#tips1").css("display","none");
+        }
+
+        //类型不能为全选择
+        if("请选择"==leaveType){
+            layer.alert("请选择请假类型!");
+            return false;
+        }
+
+        return true;
+    })
+
+
+
+
+    //保存
+    $("#save").click(function(){
+        $("#status").val("新创建");
+    })
+
+    //提交
+    $("#submit").click(function(){
+        $("#status").val("待审批");
+    })
+
+
+    //时间定时器
+    function clock(){
+        setInterval(function(){
+            var d=new Date();
+            var t=d.toLocaleString();
+            document.getElementById("createTime").value=t;
+        },1000)
+    }
+    clock();
+
+
+
+</script>
+</body>
+
+</html>

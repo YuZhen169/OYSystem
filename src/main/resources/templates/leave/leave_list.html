@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org">
+    
+    <head>
+        <meta charset="UTF-8">
+        <title>请假单管理</title>
+        <meta name="renderer" content="webkit">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+        <link rel="stylesheet" href="../css/font.css">
+        <link rel="stylesheet" href="../css/xadmin.css">
+        <script type="text/javascript" src="../js/jquery/jQuery-2.2.0.min.js"></script>
+        <script src="../lib/layui/layui.js" charset="utf-8"></script>
+        <script type="text/javascript" src="../js/xadmin.js"></script>
+
+    </head>
+    <body style="height: 100%">
+
+        <div class="layui-fluid">
+            <div class="layui-card-body ">
+                <input type="hidden" th:value="${session.employee.positionId}" id="positionId"/>
+                <form class="layui-form layui-col-space5" action="javascript:;">
+                    <span>开始时间</span>
+                    <div class="layui-input-inline layui-show-xs-block">
+                        <input class="layui-input" placeholder="开始日" name="startTime" id="startTime">
+                    </div>
+
+                    <span>结束时间</span>
+                    <div class="layui-input-inline layui-show-xs-block">
+                        <input class="layui-input" placeholder="截止日" name="endTime" id="endTime">
+                    </div>
+
+                    <span>报销单状态</span>
+                    <div class="layui-input-inline layui-show-xs-block">
+                        <select name="status" id="status">
+                            <option value="请选择">请选择</option>
+                            <option value="新创建">新创建</option>
+                            <option value="待审核">待审核</option>
+                            <option value="已审核">已审核</option>
+                            <option value="已提交">已提交</option>
+                            <option value="已打回">已打回</option>
+                            <option value="已终止">已终止</option>
+                        </select>
+                    </div>
+
+                    <div class="layui-input-inline lafite_search layui-show-xs-block">
+                        <button class="layui-btn" data-type="reload" id="check_btn">
+                            查询</button>
+                    </div>
+                </form>
+                <a class="layui-btn layui-btn-small" style="line-height:1.6em;margin-top:-31px;float:right;background: red;" onclick="location.reload()" title="刷新">
+                    <i class="layui-icon layui-icon-refresh" style="line-height:30px"></i>
+                </a>
+            </div>
+        	<table class="layui-hide" id="test" lay-filter="test"></table>
+        </div>
+    </body>
+
+    <script type="text/html" id="barDemo">
+        <a class="layui-btn layui-btn-xs" lay-event="detail"><i class="layui-icon">&#xe615;</i>查看</a>
+        <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="edit" th:if="${1==session.employee.positionId}"><i class="layui-icon">&#xe642;</i>编辑</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" th:if="${1==session.employee.positionId}"><i class="layui-icon">&#xe640;</i>删除</a>
+        <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="audit" th:if="${1!=session.employee.positionId}"><i class="layui-icon">&#xe672;</i>审核</a>
+    </script>
+
+    <script>
+
+
+    	layui.use(['laydate', 'form','table'], function() {
+            var laydate = layui.laydate;
+            var table = layui.table;
+            var form=layui.form;
+
+            table.render({
+                elem: '#test'
+                ,url:'/leave/findByCondition/'
+                ,toolbar: '#toolbarDemo'
+                , cols: [
+                    [
+                        {type: 'radio'}
+                        ,{field: 'id', width: 115, title: '编号', sort: true}
+                        ,{field: 'createTime', width: 200, title: '创建时间', sort: true}
+                        ,{field: 'createEmp', width: 130, title: '创建人',templet: function(data){ //加入此方法便可解决
+                            if(data.createEmp) return data.createEmp.name;
+                        }}
+                        ,{field: 'leaveDay', width: 105, title: '请假天数', sort: true}
+                        ,{field: 'leaveType', width: 130, title: '请假类型', sort: true}
+                        ,{field: 'status', width: 130, title: '状态', sort: true}
+                        ,{field: 'nextEmp', width: 122, title: '待处理人',templet: function(data){ //加入此方法便可解决
+                            if(data.nextEmp) return data.nextEmp.name;
+                        }}
+                        ,{fixed: 'right', title: '操作', width: 248, align: 'center', toolbar: '#barDemo'}
+                    ]
+                ]
+                , page: true
+                ,id: 'testReload'
+            })
+
+
+            var $ = layui.$, active = {reload: function(){
+                var status = $("#status").val();
+                var startTime = $("#startTime").val();
+                var endTime = $("#endTime").val();
+                //执行重载
+                table.reload('testReload', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    ,url:'/leave/findByTimeAndStatus/'
+                    ,where: {
+                        "status":status,
+                        "startTime":startTime,
+                        "endTime":endTime
+                    }
+                }, 'data');
+            }};
+
+
+            $('#check_btn').on('click', function(){
+                var type = $(this).data('type');
+                active[type] ? active[type].call(this) : '';
+            });
+
+
+            //监听工具条
+            table.on('tool(test)', function(obj){
+                var data = obj.data;
+                var positionId=$("#positionId").val();
+                if(obj.event === 'detail'){
+                    xadmin.open('查看请假单','/leave/leaveView?id='+data.id,1000,600);
+                } else if(obj.event === 'del'){
+                    if("新创建" == data.status || "已付款" == data.status || "已拒绝" == data.status || "已打回" == data.status){
+                        layer.confirm('确定要删除吗?', function(index){
+                            $.ajax({
+                                url:"/leave/deleteLeave",
+                                data:{"id":data.id},
+                                dataType:"text",
+                                type:"get",
+                                success:function (result) {
+                                    if(result==1){
+                                        layer.alert("删除成功!");
+                                        layer.close(index);
+                                        obj.del();
+                                    }else{
+                                        layer.alert("删除失败!");
+                                    }
+                                }
+                            })
+                        });
+                    }else{
+                        layer.alert("您的请假单" + data.status + ",不能删除!");
+                    }
+                } else if(obj.event === 'edit'){
+                    if("新创建" == data.status || "已打回" == data.status) {
+                        xadmin.open('更新请假单','/leave/leaveUpdate?id='+data.id,1000,600);
+                    } else {
+                        layer.alert("您的请假单" + data.status + ",不能修改!");
+                    }
+                }else if('audit'===obj.event && positionId==2){
+                    if("待审核" == data.status || "已提交"== data.status){
+                        xadmin.open('审核请假单','/claimVoucher/claimVoucherAudit?id='+data.id,1000,600);
+                    }else{
+                        layer.alert("您的请假单" + data.status + ",不能审核!");
+                    }
+                }else if('audit'===obj.event && positionId==3){
+                    if("已审核" == data.status){
+                        xadmin.open('审核请假单','/claimVoucher/claimVoucherAudit?id='+data.id,1000,600);
+                    }else{
+                        layer.alert("您的请假单" + data.status + ",不能审核!");
+                    }
+                } else if('audit'===obj.event && positionId==4){
+                    if("已审核" == data.status){
+                        xadmin.open('审核请假单','/claimVoucher/claimVoucherAudit?id='+data.id,1000,600);
+                    }else{
+                        layer.alert("您的请假单" + data.status + ",不能审核!");
+                    }
+                }
+            });
+
+            //头工具栏事件
+            table.on('toolbar(test)', function(obj){
+                var checkStatus = table.checkStatus(obj.config.id); //获取选中行状态
+                switch(obj.event){
+                    case 'getCheckData':
+                        var data = checkStatus.data;  //获取选中行数据
+                        layer.alert(JSON.stringify(data));
+                        break;
+                };
+            });
+
+            //执行一个laydate实例
+            laydate.render({
+                elem: '#startTime',type: 'datetime' //指定元素
+            });
+
+            //执行一个laydate实例
+            laydate.render({
+                elem: '#endTime',type: 'datetime' //指定元素
+            });
+
+    	});
+        /*用户-删除*/
+        function member_del(obj, id) {
+            layer.confirm('确认要删除吗？',
+            function(index) {
+                //发异步删除数据
+                $(obj).parents("tr").remove();
+                layer.msg('已删除!', {
+                    icon: 1,
+                    time: 1000
+                });
+            });
+        }
+
+
+
+
+    </script>
+
+
+
+
+
+</html>

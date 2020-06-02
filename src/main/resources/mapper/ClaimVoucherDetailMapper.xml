@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yoa.dao.ClaimVoucherDetailMapper">
+
+    <insert id="addClaimVoucherDetail" parameterType="ClaimVoucherDetail">
+        INSERT INTO `biz_claim_voucher_detail`(`mainId`,`item`,`account`,`des`)
+        VALUES (#{mainId},#{item},#{account},#{des})
+    </insert>
+
+    <update id="updateClaimVoucherDetail" parameterType="ClaimVoucherDetail">
+        UPDATE `biz_claim_voucher_detail` SET
+        `item`=#{item},
+        `account`=#{account},
+        `des`=#{des}
+        WHERE id=#{id}
+    </update>
+
+    <select id="findByCondition" parameterType="ClaimVoucherDetail" resultType="ClaimVoucherDetail">
+        SELECT * FROM `biz_claim_voucher_detail`
+        <where>
+            1=1
+            <if test="null!=mainId and ''!=mainId">
+              and   mainId=#{mainId}
+            </if>
+        </where>
+    </select>
+
+    <delete id="deleteClaimVoucherDetail">
+        DELETE FROM  `biz_claim_voucher_detail` WHERE mainId=#{id}
+    </delete>
+
+    <delete id="deleteClaimVoucherDetailById">
+        DELETE FROM  `biz_claim_voucher_detail` WHERE id=#{id}
+    </delete>
+
+</mapper>

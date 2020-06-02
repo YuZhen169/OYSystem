@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yoa.dao.ClaimVoucherMapper">
+
+    <select id="findByCondition" resultType="ClaimVoucher">
+        SELECT *,(SELECT name FROM sys_employee WHERE sn=#{claimVoucher.createSn}) snName
+        FROM biz_claim_voucher
+        <where>
+            1=1
+            <if test="null!=claimVoucher.nextDealSn and ''!=claimVoucher.nextDealSn">
+                and nextDealSn=#{claimVoucher.nextDealSn}
+            </if>
+            <if test="null!=claimVoucher.id and ''!=claimVoucher.id">
+                and id=#{claimVoucher.id}
+            </if>
+            <if test="null!=claimVoucher.createSn and ''!=claimVoucher.createSn">
+                and createSn=#{claimVoucher.createSn}
+            </if>
+            <if test="null!=claimVoucher.status and ''!=claimVoucher.status">
+                and status=#{claimVoucher.status}
+            </if>
+        </where>
+        ORDER BY createTime DESC LIMIT #{pageNo},#{pageSize}
+    </select>
+
+    <select id="findByTimeAndStatus" resultType="ClaimVoucher">
+        SELECT *,(SELECT name FROM sys_employee WHERE sn=#{sn}) snName FROM biz_claim_voucher
+        <where>
+            1=1
+            <if test="null!=status and ''!=status">
+                AND status=#{status}
+            </if>
+            <if test="null!=sn and ''!=sn">
+                AND createSn=#{sn}
+            </if>
+            <if test="null!=next and ''!=next">
+                AND nextDealSn=#{next}
+            </if>
+            <if test="null!=startTime and ''!=startTime">
+                <if test="null!=endTime and ''!=endTime">
+                    AND  createTime BETWEEN #{startTime} AND #{endTime}
+                </if>
+            </if>
+        </where>
+        ORDER BY createTime DESC LIMIT #{pageNo},#{pageSize}
+    </select>
+
+    <select id="count" resultType="int" parameterType="ClaimVoucher">
+        SELECT count(*)
+        FROM biz_claim_voucher
+        <where>
+            1=1
+            <if test="null!=nextDealSn and ''!=nextDealSn">
+                and nextDealSn=#{nextDealSn}
+            </if>
+            <if test="null!=id and ''!=id">
+                and id=#{id}
+            </if>
+            <if test="null!=createSn and ''!=createSn">
+                and createSn=#{createSn}
+            </if>
+            <if test="null!=status and ''!=status">
+                and status=#{status}
+            </if>
+        </where>
+    </select>
+
+    <select id="countByTimeAndStatus" resultType="int">
+        SELECT COUNT(*),(SELECT name FROM sys_employee WHERE sn=#{sn}) snName FROM biz_claim_voucher
+        <where>
+            1=1
+            <if test="null!=status and ''!=status">
+                AND status=#{status}
+            </if>
+            <if test="null!=sn and ''!=sn">
+                AND createSn=#{sn}
+            </if>
+            <if test="null!=next and ''!=next">
+                AND nextDealSn=#{next}
+            </if>
+            <if test="null!=startTime and ''!=startTime">
+                <if test="null!=endTime and ''!=endTime">
+                    AND  createTime BETWEEN #{startTime} AND #{endTime}
+                </if>
+            </if>
+        </where>
+    </select>
+
+    <select id="minCreateTime" resultType="String">
+        SELECT MIN(createTime) FROM `biz_claim_voucher`
+    </select>
+
+    <insert id="addClaimVoucher" parameterType="ClaimVoucher">
+        INSERT INTO `biz_claim_voucher`(`nextDealSn`,`createSn`,`createTime`,`event`,`totalAccount`,`status`)
+        VALUES (#{nextDealSn},#{createSn},#{createTime},#{event},#{totalAccount},#{status});
+    </insert>
+
+    <select id="findId" resultType="int">
+        SELECT MAX(id) FROM biz_claim_voucher;
+    </select>
+
+    <resultMap id="findClaimVoucherDetail" type="ClaimVoucher">
+        <id property="id" column="id"/>
+        <result property="nextDealSn" column="nextDealSn"/>
+        <result property="createSn" column="createSn"/>
+        <result property="createTime" column="createTime"/>
+        <result property="event" column="event"/>
+        <result property="totalAccount" column="totalAccount"/>
+        <result property="status" column="status"/>
+        <result property="modifyTime" column="modifyTime"/>
+        <collection property="detailList" ofType="ClaimVoucherDetail">
+            <id property="id" column="bcvd_id"/>
+            <result property="mainId" column="mainId"></result>
+            <result property="item" column="item"></result>
+            <result property="account" column="account"></result>
+            <result property="des" column="des"></result>
+        </collection>
+    </resultMap>
+
+    <select id="findById" resultMap="findClaimVoucherDetail">
+        SELECT bcv.*,bcvd.`id` AS bcvd_id,bcvd.`mainId`,bcvd.`item`,bcvd.`account`,bcvd.`des` FROM `biz_claim_voucher` bcv
+        INNER JOIN `biz_claim_voucher_detail` bcvd ON bcvd.`mainId`=bcv.`id`
+        WHERE bcv.`id` =#{id}
+    </select>
+
+    <update id="updateClaimVoucher" parameterType="ClaimVoucher">
+        UPDATE `biz_claim_voucher` SET
+            `nextDealSn`=#{nextDealSn},
+            `event`=#{event},
+            `totalAccount`=#{totalAccount},
+            `status`=#{status},
+            `modifyTime`=#{modifyTime}
+        WHERE id=#{id}
+    </update>
+
+    <update id="auditClaimVoucher" parameterType="ClaimVoucher">
+        UPDATE `biz_claim_voucher` SET
+         `nextDealSn`=#{nextDealSn},
+        <if test="null!=event and ''!=event">
+            `event`=#{event},
+        </if>
+        <if test="null!=totalAccount">
+            `totalAccount`=#{totalAccount},
+        </if>
+        <if test="null!=status and ''!=status">
+            `status`=#{status},
+        </if>
+        <if test="null!=modifyTime">
+            `modifyTime`=#{modifyTime}
+        </if>
+        WHERE id=#{id}
+    </update>
+
+    <delete id="deleteClaimVoucher">
+        DELETE FROM `biz_claim_voucher` WHERE id=#{id}
+    </delete>
+
+    <select id="findByAuditCount" resultType="int">
+        SELECT COUNT(*) FROM `biz_claim_voucher`
+        WHERE `nextDealSn`=#{nextDealSn} AND `status`=#{status}
+    </select>
+
+</mapper>

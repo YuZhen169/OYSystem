@@ -1,0 +1,232 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html" ; charset="utf-8" />
+    <title>添加报销单</title>
+    <link rel="stylesheet" href="../lib/layui/css/layui.css" />
+    <link rel="stylesheet" href="../css/xadmin.css">
+    <script src="../js/jquery/jQuery-2.2.0.min.js"></script>
+    <script src="../layui/layui.js"></script>
+
+
+
+    <style>
+        form {
+            margin-top: 20px;
+        }
+
+        #div {
+            width: 80%;
+            margin: 0 auto;
+        }
+        .x-nav {
+    padding: 0 20px;
+    position: relative;
+    z-index: 99;
+    border-bottom: 1px solid #e5e5e5;
+    line-height: 39px;
+    height: 39px;
+    overflow: hidden;
+    background: 
+    #fff;
+		}
+	.layui-btn{
+		background: red;
+	}
+	
+    </style>
+
+
+</head>
+
+<body style="background: white; margin: 0 auto;height: 100%">
+<div class="x-nav">
+    <!--<a class="layui-btn layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right" onclick="location.reload()" title="刷新">
+        <i class="layui-icon layui-icon-refresh" style="line-height:30px"></i>
+    </a>-->
+</div> 
+<div id="div">
+    <form class="layui-form" action="/claimVoucher/addClaimVoucher">
+        <div class="layui-form-item" method="post" id="claimForm">
+            <label class="layui-form-label">报销人</label>
+            <div class="layui-input-inline" style="width: 400px;">
+                <input th:value="${name}" readonly="readonly" type="text" required lay-verify="required" placeholder="请输入报销人" autocomplete="off" class="layui-input">
+            </div>
+            <i class="layui-icon" style="font-size: 30px;color: red;">&#x1005;</i>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">填报时间</label>
+            <div class="layui-input-inline" style="width: 400px;">
+                <input type="text" required lay-verify="required" readonly="readonly" autocomplete="off" class="layui-input"  id="createTime">
+            </div>
+            <i class="layui-icon" style="font-size: 30px;color: red;">&#x1005;</i>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">总金额</label>
+            <div class="layui-input-inline" style="width: 400px;">
+                <input type="text" readonly="readonly" required lay-verify="required" value="0" autocomplete="off" class="layui-input" name="totalAccount" id="totalAccount">
+            </div>
+            <i class="layui-icon" style="font-size: 30px;color: red;">&#x1005;</i>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">状态</label>
+            <div class="layui-input-inline" style="width: 400px;">
+                <input type="text" value="新创建" readonly="readonly" required lay-verify="required" placeholder="请输入状态" autocomplete="off" class="layui-input" name="status" id="status">
+            </div>
+            <i class="layui-icon" style="font-size: 30px;color: red;">&#x1005;</i>
+        </div>
+
+        <hr class="layui-bg-gray">
+        <div class="layui-form-item">
+            <label class="layui-form-label">报销项目</label>
+            <div class="layui-input-block">
+
+                <table class="layui-table" style="width: 600px;">
+                    <thead>
+                    <tr>
+                        <th><label class="layui-form-label" style="height: 12px;margin: 0 auto;">项目类别</label></th>
+                        <th><label class="layui-form-label" style="height: 12px;margin: 0 auto;">项目金额</label></th>
+                        <th><label class="layui-form-label" style="height: 12px;margin: 0 auto;">费用说明</label></th>
+                    </tr>
+                    </thead>
+                    <tbody id="tbody">
+                    <tr>
+                        <td>
+                            <!--<div class="layui-input-block">-->
+                            <input style="width: 150px;" type="text" required lay-verify="required" placeholder="请输入项目类别" autocomplete="off" class="layui-input" name="detailList[0].item">
+                            <!--</div>-->
+                        </td>
+                        <td>
+                            <!--<div class="layui-input-block">-->
+                            <input style="width: 150px;" onblur="account()" type="text" required lay-verify="required" placeholder="¥" autocomplete="off" class="layui-input" name="detailList[0].account">
+                            <!--</div>-->
+                        </td>
+                        <td>
+                            <!--<div class="layui-input-block">-->
+                            <input style="width: 150px;" type="text" required lay-verify="required" placeholder="请输入费用说明" autocomplete="off" class="layui-input" name="detailList[0].des">
+                            <!--</div>-->
+                        </td>
+                    </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <a class="layui-btn" id="addItem">添加项目</a>
+                <a class="layui-btn" id="delItem">删除项目</a>
+            </div>
+        </div>
+        <hr class="layui-bg-gray">
+
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">事由</label>
+            <div class="layui-input-block" style="width: 800px;">
+                <textarea required="required" name="event" placeholder="请输入内容" class="layui-textarea"></textarea>
+            </div>
+        </div>
+
+        <div class="layui-form-item ">
+            <div class="layui-input-block" style="width: 400px;">
+                <button class="layui-btn" lay-submit lay-filter="formDemo" id="save">保存</button>
+                <button class="layui-btn" id="submit">提交</button>
+            </div>
+        </div>
+
+    </form>
+</div>
+<script th:inline="javascript">
+    var flag=[[${flag}]];
+    if(flag!=null){
+        layui.use('layer',function() {
+            var layer = layui.layer;
+            layer.alert(flag);
+        });
+    }
+</script>
+
+
+<script>
+    //Demo
+    layui.use('form',function() {
+        var form = layui.form;
+        var layer = layui.layer;
+    });
+
+
+    var i = 0;
+
+
+    //添加项目
+    $("#addItem").click(function() {
+        i = i + 1;
+        var html = '<tr><td><input style="width: 150px;" type="text" name="detailList['+i+'].item" required lay-verify="required" placeholder="请输入项目类别" autocomplete="off" class="layui-input"></td><td><input style="width: 150px;" onblur="account()" type="text" name="detailList['+i+'].account" required lay-verify="required" placeholder="¥" autocomplete="off" class="layui-input account"></td><td><input style="width: 150px;" type="text" name="detailList['+i+'].des" required lay-verify="required" placeholder="请输入费用说明" autocomplete="off" class="layui-input"></td></tr>';
+        $("#tbody").append(html);
+    })
+
+    //删除项目
+    $("#delItem").click(function() {
+        if(i >0) {
+            i = i - 1;
+            if(i>=0){
+                var account=$("#tbody tr:last-child .account").val();
+                var totalAccount=$("#totalAccount").val();
+                $("#totalAccount").val(totalAccount-account);
+                $("#tbody tr:last-child").remove();
+            }
+
+        }
+    })
+
+    //保存
+    $("#save").click(function(){
+        $("#status").val("新创建");
+    })
+
+    //提交
+    $("#submit").click(function(){
+        $("#status").val("待审核");
+    })
+
+
+    //时间定时器
+    function clock(){
+        setInterval(function(){
+            var d=new Date();
+            var t=d.toLocaleString();
+            document.getElementById("createTime").value=t;
+        },1000)
+    }
+    clock();
+
+    var totalAccount=0;
+    function account(){
+        totalAccount=$("#totalAccount").val();
+        var account=0;
+        $("[name$='account']").each(function(){
+            var val=$(this).val();
+            if(val==''){
+                val=0;
+            }
+            if(!isNaN(val)){
+                account=account+parseFloat(val);
+            }
+        })
+        if(isNaN(account)){
+            $("#totalAccount").val(totalAccount);
+        }else{
+            $("#totalAccount").val(account);
+        }
+    }
+
+
+</script>
+</body>
+
+</html>

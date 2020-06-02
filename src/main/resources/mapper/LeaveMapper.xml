@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yoa.dao.LeaveMapper">
+
+    <resultMap id="findEmployee" type="Leave">
+        <id property="id" column="id"/>
+        <result property="employeeSn" column="employeeSn"/>
+        <result property="startTime" column="startTime"/>
+        <result property="endTime" column="endTime"/>
+        <result property="leaveDay" column="leaveDay"/>
+        <result property="reason" column="reason"/>
+        <result property="status" column="status"/>
+        <result property="leaveType" column="leaveType"/>
+        <result property="nextDealSn" column="nextDealSn"/>
+        <result property="approveOpinion" column="approveOpinion"/>
+        <result property="createTime" column="createTime"/>
+        <result property="modifyTime" column="modifyTime"/>
+        <association property="createEmp" javaType="Employee">
+            <id property="sn" column="e_sn"/>
+            <result property="name" column="e_name"/>
+        </association>
+        <association property="nextEmp" javaType="Employee">
+            <id property="sn" column="em_sn"/>
+            <result property="name" column="em_name"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="findAll" type="Leave">
+        <id property="id" column="id"/>
+        <result property="employeeSn" column="employeeSn"/>
+        <result property="startTime" column="startTime"/>
+        <result property="endTime" column="endTime"/>
+        <result property="leaveDay" column="leaveDay"/>
+        <result property="reason" column="reason"/>
+        <result property="status" column="status"/>
+        <result property="leaveType" column="leaveType"/>
+        <result property="nextDealSn" column="nextDealSn"/>
+        <result property="approveOpinion" column="approveOpinion"/>
+        <result property="createTime" column="createTime"/>
+        <result property="modifyTime" column="modifyTime"/>
+        <association property="createEmp" javaType="Employee">
+            <id property="sn" column="e_sn"/>
+            <result property="name" column="e_name"/>
+            <association property="department" javaType="Department">
+                <result property="name" column="d_name"/>
+            </association>
+            <association property="position" javaType="Position">
+                <result property="nameCn" column="p_name"/>
+            </association>
+        </association>
+        <association property="nextEmp" javaType="Employee">
+            <id property="sn" column="em_sn"/>
+            <result property="name" column="em_name"/>
+        </association>
+    </resultMap>
+
+    <select id="findByCondition" resultMap="findEmployee">
+        SELECT l.*,e.`sn` e_sn,e.`name` e_name,em.`sn` em_sn,em.`name` em_name FROM `biz_leave` l
+        INNER JOIN `sys_employee` e ON e.sn=l.`employeeSn`
+        INNER JOIN `sys_employee` em ON em.sn=l.`nextDealSn`
+        <where>
+          1=1
+          <if test="null!=leave.employeeSn and ''!=leave.employeeSn">
+              and employeeSn=#{leave.employeeSn}
+          </if>
+          <if test="null!=leave.id and ''!=leave.id">
+                and id=#{leave.id}
+          </if>
+          <if test="null!=leave.nextDealSn and ''!=leave.nextDealSn">
+              and nextDealSn=#{leave.nextDealSn}
+          </if>
+        </where>
+         ORDER BY createTime DESC LIMIT #{pageNo},#{pageSize}
+    </select>
+
+    <select id="countByCondition" resultType="int">
+        SELECT COUNT(*) FROM `biz_leave`
+        <where>
+            1=1
+            <if test="null!=leave.status and ''!=leave.status">
+                AND status=#{leave.status}
+            </if>
+            <if test="null!=leave.employeeSn and ''!=leave.employeeSn">
+                AND employeeSn=#{leave.employeeSn}
+            </if>
+            <if test="null!=leave.nextDealSn and ''!=leave.nextDealSn">
+                AND nextDealSn=#{leave.nextDealSn}
+            </if>
+            <if test="null!=startTime and ''!=startTime">
+                  AND `createTime`>=#{startTime}
+            </if>
+            <if test="null!=endTime and ''!=endTime">
+                 AND `createTime` &lt;=#{endTime}
+            </if>
+        </where>
+    </select>
+
+    <select id="findByTimeAndStatus" resultMap="findEmployee">
+        SELECT l.*,e.`sn` e_sn,e.`name` e_name,em.`sn` em_sn,em.`name` em_name FROM `biz_leave` l
+        INNER JOIN `sys_employee` e ON e.sn=l.`employeeSn`
+        INNER JOIN `sys_employee` em ON em.sn=l.`nextDealSn`
+        <where>
+            1=1
+            <if test="null!=status and ''!=status">
+                AND l.status=#{status}
+            </if>
+          <if test="null!=sn and ''!=sn">
+              AND l.employeeSn=#{sn}
+          </if>
+          <if test="null!=next and ''!=next">
+              AND l.nextDealSn=#{next}
+          </if>
+          <if test="null!=startTime and ''!=startTime">
+              AND l.`createTime`>=#{startTime}
+          </if>
+          <if test="null!=endTime and ''!=endTime">
+              AND l.`createTime` &lt;=#{endTime}
+          </if>
+        </where>
+          ORDER BY l.createTime DESC LIMIT #{pageNo},#{pageSize}
+    </select>
+
+    <select id="findById" resultMap="findAll">
+        SELECT l.*,e.`sn` e_sn,e.`name` e_name,d.`name` d_name,p.`nameCn` p_name,em.`sn` em_sn,em.`name` em_name FROM `biz_leave` l
+        INNER JOIN `sys_employee` e ON e.sn=l.`employeeSn`
+        INNER JOIN `sys_employee` em ON em.sn=l.`nextDealSn`
+        INNER JOIN `sys_department` d ON d.`id`=e.`departmentId`
+        INNER JOIN `sys_position` p ON p.`id`=e.`positionId`
+        WHERE 1=1  AND l.id=#{id}
+    </select>
+
+    <insert id="addLeave" parameterType="Leave">
+        INSERT INTO `biz_leave`(`employeeSn`,`startTime`,`endTime`,`leaveDay`,`reason`,`status`,`leaveType`,`nextDealSn`,`approveOpinion`,`createTime`)
+        VALUES(#{employeeSn},#{startTime},#{endTime},#{leaveDay},#{reason},#{status},#{leaveType},#{nextDealSn},#{approveOpinion},#{createTime})
+    </insert>
+
+    <delete id="deleteById">
+        DELETE FROM `biz_leave` WHERE id=#{id}
+    </delete>
+
+</mapper>

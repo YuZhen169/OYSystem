@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yoa.dao.CheckResultMapper">
+
+    <insert id="addCheckResult" parameterType="CheckResult">
+        INSERT INTO `biz_check_result`(`claimId`,`checkTime`,`checkerSn`,`result`,`comm`)
+        VALUES (#{claimId},#{checkTime},#{checkerSn},#{result},#{comm})
+    </insert>
+
+    <resultMap id="findEmployee" type="CheckResult">
+        <id property="id" column="id"/>
+        <result property="claimId" column="claimId"/>
+        <result property="checkTime" column="checkTime"/>
+        <result property="checkerSn" column="checkerSn"/>
+        <result property="result" column="result"/>
+        <result property="comm" column="comm"/>
+        <association property="employee" javaType="Employee">
+            <id property="sn" column="sn"/>
+            <result property="name" column="name"/>
+        </association>
+    </resultMap>
+
+    <select id="findByClaimId" resultMap="findEmployee">
+        SELECT r.*,e.* FROM `biz_check_result` r
+        INNER JOIN `sys_employee` e ON e.`sn`=r.`checkerSn`
+        WHERE `claimId`=#{claimId}
+    </select>
+
+    <delete id="deleteByMainId">
+      DELETE FROM `biz_check_result` WHERE `claimId`=#{claimId}
+    </delete>
+
+</mapper>

@@ -1,0 +1,272 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html" ; charset="utf-8" />
+    <title>更新报销单</title>
+    <link rel="stylesheet" href="../lib/layui/css/layui.css" />
+
+    <link rel="stylesheet" href="../css/font.css">
+    <link rel="stylesheet" href="../css/xadmin.css">
+    <script type="text/javascript" src="../js/jquery/jQuery-2.2.0.min.js"></script>
+    <script src="../lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../js/xadmin.js"></script>
+
+
+
+    <style>
+        form {
+            margin-top: 20px;
+        }
+
+        #div {
+            width: 80%;
+            margin: 0 auto;
+        }
+        h6{
+            font-weight: bold;
+            padding-left: 10px;
+            line-height: 31px;
+            border-bottom: 1px
+            #ccc solid;
+        }
+    </style>
+
+
+</head>
+
+<body style="background: white; margin: 0 auto;height: 100%">
+<h6>更新报销单</h6>
+<div id="div" th:if="${claimVoucher!=null && null!=employee}">
+    <form class="layui-form" action="javascript:;" method="get">
+        <div class="layui-form-item">
+            <label class="layui-form-label">编号</label>
+            <div class="layui-input-inline" style="width: 400px;">
+                <input th:value="${claimVoucher.id}" readonly="readonly" type="text" name="id" required lay-verify="required" placeholder="请输入报销人" autocomplete="off" class="layui-input">
+            </div>
+            <i class="layui-icon" style="font-size: 30px;color: red;">&#x1005;</i>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">填写人</label>
+            <div class="layui-input-inline" style="width: 400px;">
+                <input type="text" required lay-verify="required" readonly="readonly" autocomplete="off" class="layui-input"  th:value="${employee.name}">
+            </div>
+            <i class="layui-icon" style="font-size: 30px;color: red;">&#x1005;</i>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">部门</label>
+            <div class="layui-input-inline" style="width: 400px;">
+                <input th:value="${employee.department.name}" type="text" readonly="readonly" required lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+            </div>
+            <i class="layui-icon" style="font-size: 30px;color: red;">&#x1005;</i>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">职位</label>
+            <div class="layui-input-inline" style="width: 400px;">
+                <input type="text" readonly="readonly" required lay-verify="required" placeholder="请输入职位" autocomplete="off" class="layui-input" th:value="${employee.position.nameCn}">
+            </div>
+            <i class="layui-icon" style="font-size: 30px;color: red;">&#x1005;</i>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">填报时间</label>
+            <div class="layui-input-inline" style="width: 400px;">
+                <input type="text" readonly="readonly" required lay-verify="required" placeholder="请输入填报时间" autocomplete="off" class="layui-input" th:value="${#dates.format(claimVoucher.createTime,'yyyy-MM-dd')}">
+            </div>
+            <i class="layui-icon" style="font-size: 30px;color: red;">&#x1005;</i>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">总金额</label>
+            <div class="layui-input-inline" style="width: 400px;">
+                <input type="text" id="totalAccount"  readonly="readonly" required lay-verify="required" value="0" autocomplete="off" class="layui-input" name="totalAccount" th:value="${claimVoucher.totalAccount}">
+            </div>
+            <i class="layui-icon" style="font-size: 30px;color: red;">&#x1005;</i>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">状态</label>
+            <div class="layui-input-inline" style="width: 400px;">
+                <input type="text"  readonly="readonly" required lay-verify="required" placeholder="请输入状态" autocomplete="off" class="layui-input" name="status" id="status" th:value="${claimVoucher.status}">
+            </div>
+            <i class="layui-icon" style="font-size: 30px;color: red;">&#x1005;</i>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">待处理人</label>
+            <div class="layui-input-inline" style="width: 400px;">
+                <input type="text" readonly="readonly" required lay-verify="required" placeholder="请输入待处理人" autocomplete="off" class="layui-input" th:value="${claimVoucher.nextName}">
+            </div>
+            <i class="layui-icon" style="font-size: 30px;color: red;">&#x1005;</i>
+        </div>
+
+        <hr class="layui-bg-gray">
+        <div class="layui-form-item">
+            <label class="layui-form-label">报销项目</label>
+            <div class="layui-input-block">
+
+                <table class="layui-table" style="width: 600px;">
+                    <thead>
+                    <tr>
+                        <th><label class="layui-form-label" style="height: 12px;margin: 0 auto;font-weight: bold">项目类别</label></th>
+                        <th><label class="layui-form-label" style="height: 12px;margin: 0 auto;font-weight: bold">项目金额</label></th>
+                        <th><label class="layui-form-label" style="height: 12px;margin: 0 auto;font-weight: bold">费用说明</label></th>
+                    </tr>
+                    </thead>
+                    <tbody id="tbody">
+                    <tr th:each="claimVoucherDetail,iterStat :${claimVoucher.detailList}">
+                        <td>
+                            <input type="hidden" th:attr="name='detailList['+${iterStat.index}+'].id'"  th:value="${claimVoucherDetail.id}" />
+                            <input style="width: 150px;" type="text" required lay-verify="required" placeholder="请输入项目类别" autocomplete="off" class="layui-input" th:attr="name='detailList['+${iterStat.index}+'].item'" th:value="${claimVoucherDetail.item}">
+                        </td>
+                        <td>
+                            <input style="width: 150px;" onblur="account()" type="text" required lay-verify="required" placeholder="¥" autocomplete="off" class="layui-input account" th:attr="name='detailList['+${iterStat.index}+'].account'" th:value="${claimVoucherDetail.account}">
+                        </td>
+                        <td>
+                            <input style="width: 150px;" type="text" required lay-verify="required" placeholder="请输入费用说明" autocomplete="off" class="layui-input" th:attr="name='detailList['+${iterStat.index}+'].des'" th:value="${claimVoucherDetail.des}">
+                        </td>
+                    </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <a class="layui-btn" id="addItem" style="background: red;">添加项目</a>
+                <a class="layui-btn" id="delItem" style="background: red;">删除项目</a>
+            </div>
+        </div>
+        <hr class="layui-bg-gray">
+
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label" style="font-weight: bold">事由</label>
+            <div class="layui-input-block" style="width: 800px;">
+                <textarea th:text="${claimVoucher.event}"  required="required" name="event" placeholder="请输入内容" class="layui-textarea"></textarea>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block" style="width: 400px;">
+                <input class="layui-btn"  id="save" style="background: red;" type="submit" value="保存"/>
+                <input class="layui-btn" id="submit" style="background: red;" value="提交"  type="submit"/>
+                <button class="layui-btn" onclick="closes()" style="background: red;">返回</button>
+            </div>
+        </div>
+
+    </form>
+</div>
+<script>
+    //Demo
+    layui.use('form',function() {
+        var form = layui.form;
+        
+
+    });
+
+    function closes() {
+        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+        parent.layer.close(index);
+    }
+
+    var i = -1;
+    $("[name$='account']").each(function(){
+        i=i+1;
+    })
+
+    //添加项目
+    $("#addItem").click(function() {
+        i = i + 1;
+        var html = '<tr><td><input style="width: 150px;" type="text" name="detailList['+i+'].item" required lay-verify="required" placeholder="请输入项目类别" autocomplete="off" class="layui-input"></td><td><input style="width: 150px;" onblur="account()" type="text" name="detailList['+i+'].account" required lay-verify="required" placeholder="¥" autocomplete="off" class="layui-input account"></td><td><input style="width: 150px;" type="text" name="detailList['+i+'].des" required lay-verify="required" placeholder="请输入费用说明" autocomplete="off" class="layui-input"></td></tr>';
+        $("#tbody").append(html);
+    })
+
+    //删除项目
+    $("#delItem").click(function() {
+        if(i >0) {
+            i = i - 1;
+            if(i>=0){
+                var account=$("#tbody tr:last-child .account").val();
+                var totalAccount=$("#totalAccount").val();
+                var price=parseFloat(totalAccount-account);
+                $("#totalAccount").val(price);
+                $("#tbody tr:last-child").remove();
+            }
+
+        }
+    })
+
+
+
+
+    //保存
+    $("#save").click(function(){
+        $("#status").val("新创建");
+        update();
+    })
+
+    //提交
+    $("#submit").click(function(){
+        $("#status").val("待审核");
+        update();
+    })
+
+    $("[name$='account']").on("blur",account());
+
+    var totalAccount=0;
+    function account(){
+        totalAccount=$("#totalAccount").val();
+        var account=0;
+        $("[name$='account']").each(function(){
+            var val=$(this).val();
+            if(val==''){
+                val=0;
+            }
+            if(!isNaN(val)){
+                account=account+parseFloat(val);
+            }
+        })
+        if(isNaN(account)){
+            $("#totalAccount").val(totalAccount);
+        }else{
+            $("#totalAccount").val(account);
+        }
+    }
+
+
+    function update() {
+            $("form").submit(function () {
+                var data=$("form").serialize();
+                $.ajax({
+                    url:"/claimVoucher/updateClaimVoucher",
+                    data:data,
+                    type:"get",
+                    dataType:"text",
+                    success:function(data){
+                        if(data=="新创建") {
+                            layer.alert("保存成功!",function () {
+                                xadmin.father_reload();
+                            });
+                        }else if(data=="待审核"){
+                            layer.alert("提交成功!",function () {
+                                xadmin.father_reload();
+                            });
+                        }else{
+                            layer.alert("更新失败!",function () {
+                                xadmin.father_reload();
+                            });
+                        }
+                    }
+                })
+            })
+    }
+
+
+</script>
+</body>
+
+</html>
